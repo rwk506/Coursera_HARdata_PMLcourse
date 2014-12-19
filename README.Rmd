@@ -1,0 +1,134 @@
+# Machine Learning Prediction of the Human Activity Recognition Data
+==================================================================
+</br>
+## Executive Summary:
+The goal of this study is to build a model that can predict the type of activity or exercise performed based on measurements of human movement. We use practical machine learning techniques to build a model to predict the manner of the exercise, "classe", based on a variety of collected information. The training dataset is split and we use a generalized boosting algorithm with a standard cross validation technique to train on 60% of the training data and build a model. This model is tested to determine the in and out of sample errors (99.86% and 99.5%) then used to predict the "classe" of 20 different test cases.
+
+</br>
+</br>
+## Dataset:
+The data used in this analysis is the Human Activity Recognition Dataset for the Practical Machine Learning course as provided by Groupware (http://groupware.les.inf.puc-rio.br/har) and Ugulino, W., Cardador, D., Vega, K. et al. 2012. The dataset consists of 19,622 observations of 160 variables that describe subjects and their physical movement during activities.
+
+
+</br>
+</br>
+### Loading data
+
+First, we load the necessary packages for the impending analysis.
+```{r Load_Packages, warning=FALSE}
+library(knitr); library(caret)
+```
+
+Next, we load the two necessary files from the current directory. We check the first ten columns of the header to make sure the file has been correctly loaded.
+
+```{r Load_Data_Files, warning=FALSE}
+trainingset=read.csv('pml-training.csv')
+finaltestset=read.csv('pml-testing.csv')
+head(trainingset[0:10])   ## a brief check to make sure file loaded correctly
+```
+
+
+</br>
+</br>
+### Cleaning and Preprocessing Data
+
+Many of the entries for each observation are NAs. We exclude columns that have many NAs from the table, as these columns will not add any useful information to the model that we build. This reduces the number of columns from 160 to 60.
+
+```{r Data_Cleaning, fig.width=5, fig.height=4, warning=FALSE}
+# We select only columns without NAs
+train_proc=trainingset[colSums(is.na(finaltestset))==0]
+finaltest_proc=finaltestset[colSums(is.na(finaltestset))==0]
+
+# We take the "X" column (the first column) out of the dataset, as it is just an index, not a valid predictor
+train_proc=subset(train_proc,select=-c(X))
+finaltest_proc=subset(finaltest_proc,select=-c(X))
+
+plot(train_proc$classe,col=terrain.colors(5),ylab="Frequency",main="Histogram of Classe in Training Set")
+```
+
+We further process the dataset by breaking the table into 60% training data and 40% testing data for our machine learning algorithm.
+
+```{r Data_Processing, warning=FALSE}
+set.seed(23095)
+inTrain = createDataPartition(train_proc$classe, p=0.6, list=FALSE)
+sampleTrain=train_proc[inTrain,]
+sampleTest=train_proc[-inTrain,]
+```
+
+
+</br>
+</br>
+### Building a model
+
+Now, we build a model using ML techniques. We have chosen a Generalized Boosting Regression Model method for classification and a standard cross-validation method. The Generalized Boosting Regression Model ("GBM") was chosen for its high accuracy. This model takes many very weak predictors (such as we have here), weights them, and combines them in order to obtain a much stronger predictor. What is lost in interpretability in the boosting model algorithm is gained in model accuracy. We cross-validate our method with generic cross-validation to attain decent accuracy without compromising on speed.
+
+
+```{r Building_a_Model, warning=FALSE, message=FALSE, results='hide'}
+modelFit=train(classe~.,method="gbm",trControl=trainControl(method="cv", number=3, allowParallel=TRUE), data=sampleTrain)
+```
+
+```{r Model Results, warning=FALSE}
+modelFit$finalModel
+```
+
+The model fit used a total of 11776 samples (60% of the training data) to model the 5 classes: 'A', 'B', 'C', 'D', 'E' with a cross-validated boosting model. The accuracies are very high and the standard deviations very low, indicating a model that fits the training set well.
+
+
+</br>
+</br>
+### Errors
+
+Next we need to examine how well the model is performing. First, we determine the in-sample error, or how well the model predicts the outcome (classe) for the same data used to build the model.
+
+```{r In-Sample_Error, warning=FALSE}
+### In-sample error
+modelPred=predict(modelFit, sampleTrain)
+confusionMatrix(sampleTrain$classe, modelPred)
+```
+
+The model performs predictions for the training set with 99.86% accuracy. Because we used the training set as a basis for the model, this is unsurprising. We now use the testing dataset set aside from the initial training set to predict the out of sample error.
+
+```{r Predicted_Out_of_Sample_Error, warning=FALSE}
+### Predicted Out-of-sample error
+modelPred2=predict(modelFit, sampleTest)
+confusionMatrix(sampleTest$classe, modelPred2)
+```
+
+Our model also performs well on the testing data (40% of the training set data) set aside during training, with approximately 99.5% accuracy. This suggests that the model is not over-fitting too terribly to noise in the training dataset. 
+ 
+Confident that we can accurately predict classifications not only in sample but also out of sample, we extend our model to the test cases initially provided (re: from the pml-testing.csv file). We expect similar accuracy as the out of sample error.
+
+
+</br>
+</br>
+### Predicting Test Cases
+
+Now, we use the model we have developed and tested to explicitly predict answers for the homework and write the files for submission. 
+
+```{r Write_Answers_to_Files, warning=FALSE}
+modelPred3=predict(modelFit, finaltest_proc)
+answers=as.character(modelPred3)
+print(answers)
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("submitted_answers/problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(answers)
+```
+
+
+</br>
+</br>
+### Summary
+
+Using the highly accurate boosting algorithm with repeated cross-validation on 60% of the training dataset, we obtain 99.86% in-sample error and and estimated 99.5% out of sample error (on the remaining 40% of the training dataset used for testing). We are able to use our model to accurately predict the "classe" of 20 test cases based on new data (achieved 20 out of 20 answers correct upon submission).
+
+</br>
+</br>
+
+
