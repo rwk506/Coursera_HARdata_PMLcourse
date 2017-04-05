@@ -1,18 +1,18 @@
 # Machine Learning Prediction of the Human Activity Recognition Data
 ==================================================================
 </br>
-## Executive Summary:
+## Executive Summary: ##
 The goal of this study is to build a model that can predict the type of activity or exercise performed based on measurements of human movement. We use practical machine learning techniques to build a model to predict the manner of the exercise, "classe", based on a variety of collected information. The training dataset is split and we use a generalized boosting algorithm with a standard cross validation technique to train on 60% of the training data and build a model. This model is tested to determine the in and out of sample errors (99.86% and 99.5%) then used to predict the "classe" of 20 different test cases.
 
 </br>
 </br>
-## Dataset:
+<h3>Dataset:</h3>
 The data used in this analysis is the Human Activity Recognition Dataset for the Practical Machine Learning course as provided by Groupware (http://groupware.les.inf.puc-rio.br/har) and Ugulino, W., Cardador, D., Vega, K. et al. 2012. The dataset consists of 19,622 observations of 160 variables that describe subjects and their physical movement during activities.
 
 
 </br>
 </br>
-### Loading data
+<h3>Loading data</h3>
 
 First, we load the necessary packages for the impending analysis.
 
@@ -54,7 +54,7 @@ head(trainingset[0:10])   ## a brief check to make sure file loaded correctly
 
 </br>
 </br>
-### Cleaning and Preprocessing Data
+<h3>Cleaning and Preprocessing Data</h3>
 
 Many of the entries for each observation are NAs. We exclude columns that have many NAs from the table, as these columns will not add any useful information to the model that we build. This reduces the number of columns from 160 to 60.
 
@@ -86,7 +86,7 @@ sampleTest=train_proc[-inTrain,]
 
 </br>
 </br>
-### Building a model
+<h3>Building a model</h3>
 
 Now, we build a model using ML techniques. We have chosen a Generalized Boosting Regression Model method for classification and a standard cross-validation method. The Generalized Boosting Regression Model ("GBM") was chosen for its high accuracy. This model takes many very weak predictors (such as we have here), weights them, and combines them in order to obtain a much stronger predictor. What is lost in interpretability in the boosting model algorithm is gained in model accuracy. We cross-validate our method with generic cross-validation to attain decent accuracy without compromising on speed.
 
@@ -112,7 +112,7 @@ The model fit used a total of 11776 samples (60% of the training data) to model 
 
 </br>
 </br>
-### Errors
+<h3>Errors</h3>
 
 Next we need to examine how well the model is performing. First, we determine the in-sample error, or how well the model predicts the outcome (classe) for the same data used to build the model.
 
@@ -207,7 +207,7 @@ Confident that we can accurately predict classifications not only in sample but 
 
 </br>
 </br>
-### Predicting Test Cases
+<h3>Predicting Test Cases</h3>
 
 Now, we use the model we have developed and tested to explicitly predict answers for the homework and write the files for submission. 
 
@@ -238,7 +238,7 @@ pml_write_files(answers)
 
 </br>
 </br>
-### Summary
+<h3>Summary</h3>
 
 Using the highly accurate boosting algorithm with repeated cross-validation on 60% of the training dataset, we obtain 99.86% in-sample error and and estimated 99.5% out of sample error (on the remaining 40% of the training dataset used for testing). We are able to use our model to accurately predict the "classe" of 20 test cases based on new data (achieved 20 out of 20 answers correct upon submission).
 
